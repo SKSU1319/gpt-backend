@@ -1,58 +1,89 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/earnhub');
+// Frontend dashboard serve karne ke liye
+app.use(express.static(path.join(__dirname)));
 
-const User = mongoose.model('User', new mongoose.Schema({
-    userId: String,
-    balance: { type: Number, default: 0 }
-}));
+const MONGO_URI = process.env.MONGO_URI;
 
-const Transaction = mongoose.model('Transaction', new mongoose.Schema({
-    transactionId: { type: String, unique: true },
-    userId: String,
-    amount: Number
-}));
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('DB error:', err));
 
-// 1. User Balance check karne ka API
-app.get('/api/user/:id', async (req, res) => {
-    let user = await User.findOne({ userId: req.params.id });
-    if (!user) user = await User.create({ userId: req.params.id, balance: 0 });
+const userSchema = new mongoose.Schema({
+  userId: { type: String, unique: true },
+  balance: { type: Number, default: 0 }
+});
+
+const transactionSchema = new mongoose.Schema({
+  transactionId: { type: String, unique: true },
+  userId: String,
+  amount: Number,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
+// Home route: seedha index.html dikhayega
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Balance check API
+app.get('/api/user/:userId', async (req, res) => {
+  try {
+    let user = await User.findOne({ userId: req.params.userId });
+    if (!user) {
+      user = await User.create({ userId: req.params.userId, balance: 0 });
+    }
     res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// 2. Postback Endpoint (Offerwall network isko call karega)
+// Postback API
 app.get('/api/postback', async (req, res) => {
-    const { user_id, amount, secret, transaction_id } = req.query;
+  const { user_id, amount, transaction_id, secret } = req.query;
 
-    // Security: Secret key check karein
-    if (secret !== "YOUR_OFFERWALL_SECRET_KEY") {
-        return res.status(403).send("Unauthorized");
+  if (secret !== 'MY_SECRET_KEY_123') {
+    return res.status(403).send('Invalid secret');
+  }
+
+  try {
+    const exists = await Transaction.findOne({ transactionId: transaction_id });
+    if (exists) {
+      return res.status(200).send('Duplicate transaction');
     }
 
-    try {
-        // Prevent double credit: Check agar transaction pehle se record hai
-        const exists = await Transaction.findOne({ transactionId: transaction_id });
-        if (exists) return res.send("OK");
+    const netAmount = parseFloat(amount) * 0.50;
 
-        // 50% commission cut karein (jaise network ne $1 diya toh user ko $0.50 milega)
-        const userReward = parseFloat(amount) * 0.50;
+    await Transaction.create({
+      transactionId: transaction_id,
+      userId: user_id,
+      amount: netAmount
+    });
 
-        // Database update karein
-        await Transaction.create({ transactionId: transaction_id, userId: user_id, amount: userReward });
-        await User.updateOne({ userId: user_id }, { $inc: { balance: userReward } });
+    await User.findOneAndUpdate(
+      { userId: user_id },
+      { $inc: { balance: netAmount } },
+      { upsert: true, new: true }
+    );
 
-        // Network ko OK send karein taaki signal dubara na aaye
-        res.send("OK");
-    } catch (err) {
-        res.status(500).send("Error");
-    }
+    res.status(200).send('OK');
+  } catch (err) {
+    res.status(500).send('Database error');
+  }
 });
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
