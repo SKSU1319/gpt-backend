@@ -232,7 +232,7 @@
 
       <div class="input-group">
         <label>Amount (in USD)</label>
-        <input type="number" id="payoutAmount" value="1.00" min="0.50" step="0.50">
+        <input type="number" id="payoutAmount" value="0.50" min="0.10" step="0.10">
       </div>
 
       <div class="modal-btns">
@@ -272,6 +272,7 @@
     const currentUserId = "user_101";
     const backendUrl = "https://gpt-backend-zh2q.onrender.com";
 
+    // 1. Fetch live balance from backend
     async function updateBalance() {
       try {
         const res = await fetch(`${backendUrl}/api/user/${currentUserId}`);
@@ -285,6 +286,7 @@
     updateBalance();
     setInterval(updateBalance, 8000);
 
+    // 2. Modal open & close
     function openWithdrawModal() {
       document.getElementById('withdrawModal').style.display = 'flex';
     }
@@ -311,31 +313,77 @@
       }
     }
 
-    function submitWithdraw() {
+    // 3. Send Withdraw Request to Backend & Deduct Balance
+    async function submitWithdraw() {
       const method = document.getElementById('payoutMethod').value;
       const details = document.getElementById('payoutDetails').value.trim();
       const amount = document.getElementById('payoutAmount').value;
 
       if (!details) {
-        alert('Payment details darj karein!');
+        alert('Payment details daalna zaroori hai!');
         return;
       }
 
-      alert('Withdrawal request submit ho gayi: $' + amount + ' via ' + method.toUpperCase() + ' (' + details + ')');
-      closeModal('withdrawModal');
+      try {
+        const res = await fetch(`${backendUrl}/api/payout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUserId,
+            type: 'withdraw',
+            method: method,
+            details: details,
+            amount: amount
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Request successful! Naya balance: $' + Number(data.newBalance).toFixed(2));
+          updateBalance();
+          closeModal('withdrawModal');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (err) {
+        alert('Server connection error. Please try again!');
+      }
     }
 
-    function submitRedeem() {
+    // 4. Send Redeem Voucher Request to Backend
+    async function submitRedeem() {
       const item = document.getElementById('voucherType').value;
       const contact = document.getElementById('voucherContact').value.trim();
 
       if (!contact) {
-        alert('Email ID darj karein!');
+        alert('Email ID daalna zaroori hai!');
         return;
       }
 
-      alert('Redeem claim request receive ho gayi hai for ' + item + ' (' + contact + ')');
-      closeModal('redeemModal');
+      try {
+        const res = await fetch(`${backendUrl}/api/payout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUserId,
+            type: 'redeem',
+            method: item,
+            details: contact,
+            amount: 1.00
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Redeem claim successful! Naya balance: $' + Number(data.newBalance).toFixed(2));
+          updateBalance();
+          closeModal('redeemModal');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (err) {
+        alert('Server connection error. Please try again!');
+      }
     }
   </script>
 
