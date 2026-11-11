@@ -56,21 +56,33 @@
       font-weight: 800;
       color: #22c55e;
     }
-    .withdraw-btn {
-      background: #22c55e;
-      color: #ffffff;
-      border: none;
-      padding: 12px 28px;
+
+    /* Action Buttons Row */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 12px 0;
       font-size: 15px;
       font-weight: bold;
       border-radius: 10px;
+      border: none;
       cursor: pointer;
-      width: 100%;
-      margin-top: 16px;
-      transition: background 0.2s;
+      transition: transform 0.1s, opacity 0.2s;
     }
-    .withdraw-btn:hover {
-      background: #16a34a;
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+    .redeem-btn {
+      background: #0284c7;
+      color: #ffffff;
+    }
+    .withdraw-btn {
+      background: #22c55e;
+      color: #ffffff;
     }
 
     /* Offerwall Container */
@@ -104,7 +116,7 @@
       display: none;
     }
 
-    /* Withdraw Modal (Popup) */
+    /* Modal Overlay */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -181,7 +193,12 @@
       <div class="user-info">User ID: <b id="uid">user_101</b></div>
       <div class="balance-title">Current Balance</div>
       <div class="points-val">$<span id="bal">0.00</span></div>
-      <button class="withdraw-btn" onclick="openWithdrawModal()">Redeem / Withdraw</button>
+      
+      <!-- Side by Side Buttons -->
+      <div class="btn-group">
+        <button class="action-btn redeem-btn" onclick="openRedeemModal()">Redeem</button>
+        <button class="action-btn withdraw-btn" onclick="openWithdrawModal()">Withdraw</button>
+      </div>
     </div>
 
     <!-- Offerwall Section -->
@@ -191,7 +208,6 @@
       <p style="font-size: 13px; color: #94a3b8; max-width: 340px; margin-bottom: 12px;">
         Account approve hote hi CPALead ka live offers iFrame yahan load ho jayega.
       </p>
-      <!-- Offerwall iFrame ready for URL insertion -->
       <iframe id="wall" src=""></iframe>
     </div>
   </div>
@@ -199,7 +215,7 @@
   <!-- Withdraw Modal -->
   <div class="modal-overlay" id="withdrawModal">
     <div class="modal-box">
-      <h3 style="font-size: 18px;">Request Payout</h3>
+      <h3 style="font-size: 18px;">Withdraw Cash</h3>
       
       <div class="input-group">
         <label>Payment Method</label>
@@ -221,13 +237,38 @@
 
       <div class="modal-btns">
         <button class="confirm-btn" onclick="submitWithdraw()">Submit Request</button>
-        <button class="close-btn" onclick="closeWithdrawModal()">Cancel</button>
+        <button class="close-btn" onclick="closeModal('withdrawModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Redeem Modal -->
+  <div class="modal-overlay" id="redeemModal">
+    <div class="modal-box">
+      <h3 style="font-size: 18px;">Redeem Vouchers / Cards</h3>
+      
+      <div class="input-group">
+        <label>Select Reward</label>
+        <select id="voucherType">
+          <option value="playstore">Google Play Redeem Code ($1.00)</option>
+          <option value="amazon">Amazon Gift Voucher ($1.00)</option>
+          <option value="crypto">USDT / Crypto Voucher ($1.00)</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Your Email / Receiving ID</label>
+        <input type="text" id="voucherContact" placeholder="Enter email to receive code">
+      </div>
+
+      <div class="modal-btns">
+        <button class="confirm-btn" style="background:#0284c7; color:#fff;" onclick="submitRedeem()">Claim Voucher</button>
+        <button class="close-btn" onclick="closeModal('redeemModal')">Cancel</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Live Backend Balance Fetching
     const currentUserId = "user_101";
     const backendUrl = "https://gpt-backend-zh2q.onrender.com";
 
@@ -244,13 +285,16 @@
     updateBalance();
     setInterval(updateBalance, 8000);
 
-    // Modal Functions
     function openWithdrawModal() {
       document.getElementById('withdrawModal').style.display = 'flex';
     }
 
-    function closeWithdrawModal() {
-      document.getElementById('withdrawModal').style.display = 'none';
+    function openRedeemModal() {
+      document.getElementById('redeemModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
     }
 
     function toggleMethodField() {
@@ -273,12 +317,25 @@
       const amount = document.getElementById('payoutAmount').value;
 
       if (!details) {
-        alert('Payment details daalna zaroori hai!');
+        alert('Payment details darj karein!');
         return;
       }
 
       alert('Withdrawal request submit ho gayi: $' + amount + ' via ' + method.toUpperCase() + ' (' + details + ')');
-      closeWithdrawModal();
+      closeModal('withdrawModal');
+    }
+
+    function submitRedeem() {
+      const item = document.getElementById('voucherType').value;
+      const contact = document.getElementById('voucherContact').value.trim();
+
+      if (!contact) {
+        alert('Email ID darj karein!');
+        return;
+      }
+
+      alert('Redeem claim request receive ho gayi hai for ' + item + ' (' + contact + ')');
+      closeModal('redeemModal');
     }
   </script>
 
