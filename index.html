@@ -5,25 +5,229 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarnHub Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; text-align: center; margin: 0; padding: 20px; }
-    .card { background: #1e293b; max-width: 600px; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .wallet { font-size: 32px; font-weight: bold; color: #22c55e; margin: 15px 0; }
-    .user-info { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
-    iframe { width: 100%; height: 550px; border: none; border-radius: 8px; background: #ffffff; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 550px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    /* Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid #475569;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    .user-info {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .user-info b {
+      color: #38bdf8;
+    }
+    .balance-title {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .points-val {
+      font-size: 38px;
+      font-weight: 800;
+      color: #22c55e;
+    }
+    .withdraw-btn {
+      background: #22c55e;
+      color: #ffffff;
+      border: none;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    .withdraw-btn:hover {
+      background: #16a34a;
+    }
+
+    /* Offerwall Container */
+    .offerwall-container {
+      background-color: #1e293b;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      padding: 20px 16px;
+      min-height: 450px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .pending-badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    iframe {
+      width: 100%;
+      height: 550px;
+      border: none;
+      border-radius: 8px;
+      display: none;
+    }
+
+    /* Withdraw Modal (Popup) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-box {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+    .input-group label {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .input-group select, .input-group input {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .confirm-btn {
+      flex: 1;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .close-btn {
+      background: #475569;
+      color: #f8fafc;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>Earn Dashboard</h2>
-    <div class="user-info">User ID: <b id="uid">user_101</b></div>
-    <div class="wallet">$<span id="bal">0.00</span></div>
+  <div class="container">
+    <!-- User Wallet Section -->
+    <div class="balance-card">
+      <div class="user-info">User ID: <b id="uid">user_101</b></div>
+      <div class="balance-title">Current Balance</div>
+      <div class="points-val">$<span id="bal">0.00</span></div>
+      <button class="withdraw-btn" onclick="openWithdrawModal()">Redeem / Withdraw</button>
+    </div>
 
-    <!-- Offerwall Frame -->
-    <iframe id="wall" src=""></iframe>
+    <!-- Offerwall Section -->
+    <div class="offerwall-container" id="offerwallArea">
+      <span class="pending-badge">CPALead Review Pending (72h)</span>
+      <h3 style="font-size: 16px; margin-bottom: 6px;">Offerwall Integration</h3>
+      <p style="font-size: 13px; color: #94a3b8; max-width: 340px; margin-bottom: 12px;">
+        Account approve hote hi CPALead ka live offers iFrame yahan load ho jayega.
+      </p>
+      <!-- Offerwall iFrame ready for URL insertion -->
+      <iframe id="wall" src=""></iframe>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div class="modal-overlay" id="withdrawModal">
+    <div class="modal-box">
+      <h3 style="font-size: 18px;">Request Payout</h3>
+      
+      <div class="input-group">
+        <label>Payment Method</label>
+        <select id="payoutMethod" onchange="toggleMethodField()">
+          <option value="upi">UPI (India)</option>
+          <option value="paypal">PayPal (USD)</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label id="detailsLabel">UPI ID (e.g. yourname@okhdfcbank)</label>
+        <input type="text" id="payoutDetails" placeholder="Enter UPI ID">
+      </div>
+
+      <div class="input-group">
+        <label>Amount (in USD)</label>
+        <input type="number" id="payoutAmount" value="1.00" min="0.50" step="0.50">
+      </div>
+
+      <div class="modal-btns">
+        <button class="confirm-btn" onclick="submitWithdraw()">Submit Request</button>
+        <button class="close-btn" onclick="closeWithdrawModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script>
+    // Live Backend Balance Fetching
     const currentUserId = "user_101";
     const backendUrl = "https://gpt-backend-zh2q.onrender.com";
 
@@ -39,6 +243,44 @@
 
     updateBalance();
     setInterval(updateBalance, 8000);
+
+    // Modal Functions
+    function openWithdrawModal() {
+      document.getElementById('withdrawModal').style.display = 'flex';
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('withdrawModal').style.display = 'none';
+    }
+
+    function toggleMethodField() {
+      const method = document.getElementById('payoutMethod').value;
+      const label = document.getElementById('detailsLabel');
+      const input = document.getElementById('payoutDetails');
+
+      if (method === 'upi') {
+        label.innerText = 'UPI ID (e.g. yourname@okhdfcbank)';
+        input.placeholder = 'Enter UPI ID';
+      } else {
+        label.innerText = 'PayPal Email Address';
+        input.placeholder = 'Enter your PayPal email';
+      }
+    }
+
+    function submitWithdraw() {
+      const method = document.getElementById('payoutMethod').value;
+      const details = document.getElementById('payoutDetails').value.trim();
+      const amount = document.getElementById('payoutAmount').value;
+
+      if (!details) {
+        alert('Payment details daalna zaroori hai!');
+        return;
+      }
+
+      alert('Withdrawal request submit ho gayi: $' + amount + ' via ' + method.toUpperCase() + ' (' + details + ')');
+      closeWithdrawModal();
+    }
   </script>
+
 </body>
 </html>
