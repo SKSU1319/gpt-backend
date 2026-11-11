@@ -5,17 +5,19 @@ const path = require('path');
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-// Frontend dashboard serve karne ke liye
+// Frontend static serve
 app.use(express.static(path.join(__dirname)));
 
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => console.log('Connected to MongoDB!'))
   .catch(err => console.error('DB error:', err));
 
+// Schemas
 const userSchema = new mongoose.Schema({
   userId: { type: String, unique: true },
   balance: { type: Number, default: 0 }
@@ -28,10 +30,21 @@ const transactionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const payoutSchema = new mongoose.Schema({
+  userId: String,
+  type: String, // 'withdraw' ya 'redeem'
+  method: String, // 'upi', 'paypal', 'playstore', etc.
+  details: String, // UPI ID / Email
+  amount: Number,
+  status: { type: String, default: 'pending' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
+const Payout = mongoose.model('Payout', payoutSchema);
 
-// Home route: seedha index.html dikhayega
+// Home route
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -41,15 +54,45 @@ app.get('/api/user/:userId', async (req, res) => {
   try {
     let user = await User.findOne({ userId: req.params.userId });
     if (!user) {
-      user = await User.create({ userId: req.params.userId, balance: 0 });
+      user = await User.create({ userId: req.params.userId, balance: 1.00 });
     }
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error!' });
   }
 });
 
-// Postback API
+// Payout / Redeem API (Redeem aur Withdraw popup ke liye)
+app.post('/api/payout', async (req, res) => {
+  const { userId, type, method, details, amount } = req.body;
+  const numAmount = parseFloat(amount);
+
+  try {
+    const user = await User.findOne({ userId });
+    if (!user || user.balance < numAmount) {
+      return res.status(400).json({ success: false, message: 'Insufficient balance!' });
+    }
+
+    // Balance deduct
+    user.balance -= numAmount;
+    await user.save();
+
+    // Payout record save
+    const newPayout = await Payout.create({
+      userId,
+      type,
+      method,
+      details,
+      amount: numAmount
+    });
+
+    res.json({ success: true, newBalance: user.balance, payoutId: newPayout._id });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Payout processing error' });
+  }
+});
+
+// Postback API (CPALead / Ad Network webhook)
 app.get('/api/postback', async (req, res) => {
   const { user_id, amount, transaction_id, secret } = req.query;
 
@@ -63,7 +106,7 @@ app.get('/api/postback', async (req, res) => {
       return res.status(200).send('Duplicate transaction');
     }
 
-    const netAmount = parseFloat(amount) * 0.50;
+    const netAmount = parseFloat(amount) * 0.50; // 50% user ko credit
 
     await Transaction.create({
       transactionId: transaction_id,
