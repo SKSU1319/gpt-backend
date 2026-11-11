@@ -62,7 +62,7 @@ app.get('/api/user/:userId', async (req, res) => {
   }
 });
 
-// Payout / Redeem API (Redeem aur Withdraw popup ke liye)
+// Payout / Redeem API
 app.post('/api/payout', async (req, res) => {
   const { userId, type, method, details, amount } = req.body;
   const numAmount = parseFloat(amount);
@@ -73,11 +73,9 @@ app.post('/api/payout', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Insufficient balance!' });
     }
 
-    // Balance deduct
     user.balance -= numAmount;
     await user.save();
 
-    // Payout record save
     const newPayout = await Payout.create({
       userId,
       type,
@@ -92,7 +90,7 @@ app.post('/api/payout', async (req, res) => {
   }
 });
 
-// Postback API (CPALead / Ad Network webhook)
+// Postback API
 app.get('/api/postback', async (req, res) => {
   const { user_id, amount, transaction_id, secret } = req.query;
 
@@ -106,7 +104,7 @@ app.get('/api/postback', async (req, res) => {
       return res.status(200).send('Duplicate transaction');
     }
 
-    const netAmount = parseFloat(amount) * 0.50; // 50% user ko credit
+    const netAmount = parseFloat(amount) * 0.50;
 
     await Transaction.create({
       transactionId: transaction_id,
@@ -123,6 +121,54 @@ app.get('/api/postback', async (req, res) => {
     res.status(200).send('OK');
   } catch (err) {
     res.status(500).send('Database error');
+  }
+});
+
+// Secret Admin Panel: Saari payout requests dekhne ke liye
+app.get('/admin/payouts', async (req, res) => {
+  try {
+    const payouts = await Payout.find().sort({ createdAt: -1 });
+    let rows = payouts.map(p => `
+      <tr>
+        <td style="padding:10px; border:1px solid #334155;">${p.userId}</td>
+        <td style="padding:10px; border:1px solid #334155; text-transform:uppercase; font-weight:bold; color:#38bdf8;">${p.type} (${p.method})</td>
+        <td style="padding:10px; border:1px solid #334155; color:#a3e635;">${p.details}</td>
+        <td style="padding:10px; border:1px solid #334155; font-weight:bold;">$${Number(p.amount).toFixed(2)}</td>
+        <td style="padding:10px; border:1px solid #334155;">${new Date(p.createdAt).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Admin Payouts Manager</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; padding:20px;">
+        <h2>Pending & Processed Payout Requests</h2>
+        <p style="color:#94a3b8; font-size:14px; margin-bottom:16px;">Yeh sirf aapke dekhne ke liye hai.</p>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; background:#1e293b; text-align:left; font-size:14px;">
+            <thead>
+              <tr style="background:#334155; color:#f8fafc;">
+                <th style="padding:10px; border:1px solid #334155;">User</th>
+                <th style="padding:10px; border:1px solid #334155;">Method</th>
+                <th style="padding:10px; border:1px solid #334155;">Payment Address / ID</th>
+                <th style="padding:10px; border:1px solid #334155;">Amount</th>
+                <th style="padding:10px; border:1px solid #334155;">Date & Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows || '<tr><td colspan="5" style="padding:15px; text-align:center; color:#94a3b8;">Koi payout request nahi mili.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    res.status(500).send('Error loading admin panel');
   }
 });
 
