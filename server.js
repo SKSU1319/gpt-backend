@@ -61,31 +61,43 @@ app.post('/api/auth', async (req, res) => {
     let user = await User.findOne({ userId: cleanId });
 
     if (!user) {
-      // Naya user account password ke sath banega
       user = await User.create({ userId: cleanId, password: password, balance: 0 });
     } else if (!user.password) {
-      // Purane bina password wale account (jaise user_101) par pehla password set ho jayega
       user.password = password;
       await user.save();
     } else if (user.password !== password) {
       return res.status(401).json({ success: false, message: 'Galat Password! Sahi password dalein ya naya username chunein.' });
     }
 
-    const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
-    res.json({ success: true, user: { userId: user.userId, balance: user.balance }, history });
+    const payouts = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+    const earnings = await Transaction.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+
+    res.json({
+      success: true,
+      user: { userId: user.userId, balance: user.balance },
+      history: payouts,
+      earnings: earnings
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error!' });
   }
 });
 
-// Refresh Balance & History API
+// Refresh Balance, Earning History & Payout History API
 app.get('/api/user/:userId', async (req, res) => {
   try {
     const cleanId = req.params.userId.toLowerCase().trim();
     const user = await User.findOne({ userId: cleanId });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
-    res.json({ user: { userId: user.userId, balance: user.balance }, history });
+
+    const payouts = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+    const earnings = await Transaction.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+
+    res.json({
+      user: { userId: user.userId, balance: user.balance },
+      history: payouts,
+      earnings: earnings
+    });
   } catch (err) {
     res.status(500).json({ error: 'Server error!' });
   }
