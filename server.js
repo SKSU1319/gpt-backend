@@ -7,8 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
-// Frontend static serve
 app.use(express.static(path.join(__dirname)));
 
 const MONGO_URI = process.env.MONGO_URI;
@@ -19,8 +17,9 @@ mongoose.connect(MONGO_URI)
 
 // Schemas
 const userSchema = new mongoose.Schema({
-  userId: { type: String, unique: true },
-  balance: { type: Number, default: 0 }
+  userId: { type: String, unique: true, lowercase: true, trim: true },
+  balance: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const transactionSchema = new mongoose.Schema({
@@ -32,9 +31,9 @@ const transactionSchema = new mongoose.Schema({
 
 const payoutSchema = new mongoose.Schema({
   userId: String,
-  type: String, // 'withdraw' ya 'redeem'
-  method: String, // 'upi', 'paypal', 'playstore', etc.
-  details: String, // UPI ID / Email
+  type: String,
+  method: String,
+  details: String,
   amount: Number,
   status: { type: String, default: 'pending' },
   createdAt: { type: Date, default: Date.now }
@@ -49,14 +48,17 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Balance check API
+// User Login / Auto-Register & Balance API
 app.get('/api/user/:userId', async (req, res) => {
   try {
-    let user = await User.findOne({ userId: req.params.userId });
+    const cleanId = req.params.userId.toLowerCase().trim();
+    let user = await User.findOne({ userId: cleanId });
     if (!user) {
-      user = await User.create({ userId: req.params.userId, balance: 1.00 });
+      // Naye user ka account 0 balance ke sath create hoga
+      user = await User.create({ userId: cleanId, balance: 0 });
     }
-    res.json(user);
+    const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
+    res.json({ user, history });
   } catch (err) {
     res.status(500).json({ error: 'Server error!' });
   }
@@ -68,8 +70,9 @@ app.post('/api/payout', async (req, res) => {
   const numAmount = parseFloat(amount);
 
   try {
-    const user = await User.findOne({ userId });
-    if (!user || user.balance < numAmount) {
+    const cleanId = userId.toLowerCase().trim();
+    const user = await User.findOne({ userId: cleanId });
+    if (!user || user.balance < numAmount || numAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Insufficient balance!' });
     }
 
@@ -77,7 +80,7 @@ app.post('/api/payout', async (req, res) => {
     await user.save();
 
     const newPayout = await Payout.create({
-      userId,
+      userId: cleanId,
       type,
       method,
       details,
@@ -90,7 +93,7 @@ app.post('/api/payout', async (req, res) => {
   }
 });
 
-// Postback API
+// Universal Postback API (CPALead, Monlix, etc.)
 app.get('/api/postback', async (req, res) => {
   const { user_id, amount, transaction_id, secret } = req.query;
 
@@ -104,16 +107,17 @@ app.get('/api/postback', async (req, res) => {
       return res.status(200).send('Duplicate transaction');
     }
 
+    const cleanId = user_id.toLowerCase().trim();
     const netAmount = parseFloat(amount) * 0.50;
 
     await Transaction.create({
       transactionId: transaction_id,
-      userId: user_id,
+      userId: cleanId,
       amount: netAmount
     });
 
     await User.findOneAndUpdate(
-      { userId: user_id },
+      { userId: cleanId },
       { $inc: { balance: netAmount } },
       { upsert: true, new: true }
     );
@@ -124,8 +128,13 @@ app.get('/api/postback', async (req, res) => {
   }
 });
 
-// Secret Admin Panel: Saari payout requests dekhne ke liye
+// Password-Protected Admin Panel
 app.get('/admin/payouts', async (req, res) => {
+  // Password check (?pass=admin789)
+  if (req.query.pass !== 'admin789') {
+    return res.status(401).send('<h2 style="font-family:sans-serif; color:red; text-align:center; margin-top:50px;">Access Denied: Incorrect Admin Password</h2>');
+  }
+
   try {
     const payouts = await Payout.find().sort({ createdAt: -1 });
     let rows = payouts.map(p => `
@@ -147,7 +156,6 @@ app.get('/admin/payouts', async (req, res) => {
       </head>
       <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; padding:20px;">
         <h2>Pending & Processed Payout Requests</h2>
-        <p style="color:#94a3b8; font-size:14px; margin-bottom:16px;">Yeh sirf aapke dekhne ke liye hai.</p>
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; background:#1e293b; text-align:left; font-size:14px;">
             <thead>
