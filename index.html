@@ -50,12 +50,13 @@
 <body>
 
 <div class="container">
-  <!-- LOGIN VIEW -->
+  <!-- SECURE LOGIN / REGISTER VIEW -->
   <div id="loginView" class="login-box">
     <h1>EarnRewards</h1>
-    <p>Apna Username ya Email enter karein aur tasks karke earn karein</p>
-    <input type="text" id="loginInput" placeholder="e.g. subrajit_01 ya email">
-    <button class="btn-primary" onclick="loginUser()">Start Earning</button>
+    <p>Apna Nickname / Email aur Password enter karein (Naya account automatic ban jayega)</p>
+    <input type="text" id="loginInput" placeholder="Nickname ya Email (e.g. subrajit_01)">
+    <input type="password" id="passwordInput" placeholder="Password (min 4 characters)">
+    <button class="btn-primary" onclick="loginUser()">Login / Create Account</button>
   </div>
 
   <!-- DASHBOARD VIEW -->
@@ -113,10 +114,9 @@
   let currentUser = localStorage.getItem('gpt_user_id') || '';
   let currentType = 'withdraw';
 
-  // Offerwall Links (Approval ke baad yahan link dalenge)
   const WALL_URLS = {
-    cpalead: '', // Approval ke baad CPALead link dalenge
-    monlix: ''   // Approval ke baad Monlix link dalenge
+    cpalead: '',
+    monlix: ''
   };
 
   function init() {
@@ -131,12 +131,30 @@
     }
   }
 
-  function loginUser() {
-    const val = document.getElementById('loginInput').value.trim();
-    if (!val || val.length < 3) return alert('Kam se kam 3 letters ka username dalein');
-    currentUser = val.toLowerCase();
-    localStorage.setItem('gpt_user_id', currentUser);
-    init();
+  async function loginUser() {
+    const userId = document.getElementById('loginInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    if (!userId || userId.length < 3) return alert('Kam se kam 3 letters ka nickname/email dalein');
+    if (!password || password.length < 4) return alert('Kam se kam 4 characters ka password dalein');
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        currentUser = data.user.userId;
+        localStorage.setItem('gpt_user_id', currentUser);
+        init();
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (e) {
+      alert('Server se connect nahi ho paya');
+    }
   }
 
   function logoutUser() {
@@ -148,17 +166,21 @@
   async function loadUserData() {
     try {
       const res = await fetch('/api/user/' + encodeURIComponent(currentUser));
+      if (!res.ok) return logoutUser();
       const data = await res.json();
       if (data.user) {
         document.getElementById('balance').innerText = '$' + Number(data.user.balance).toFixed(2);
       }
       if (data.history && data.history.length > 0) {
-        document.getElementById('historyList').innerHTML = data.history.map(h => `
-          <div class="history-item">
-            <div><strong style="text-transform:uppercase; color:#38bdf8;">${h.method}</strong><br><span style="color:#94a3b8; font-size:11px;">${h.details}</span></div>
-            <div style="text-align:right;"><strong>$${Number(h.amount).toFixed(2)}</strong><br><span style="color:#eab308; font-size:11px;">${h.status}</span></div>
-          </div>
-        `).join('');
+        document.getElementById('historyList').innerHTML = data.history.map(h => {
+          const statusColor = (h.status && h.status.toLowerCase() === 'successful') ? '#22c55e' : '#eab308';
+          return `
+            <div class="history-item">
+              <div><strong style="text-transform:uppercase; color:#38bdf8;">${h.method}</strong><br><span style="color:#94a3b8; font-size:11px;">${h.details}</span></div>
+              <div style="text-align:right;"><strong>$${Number(h.amount).toFixed(2)}</strong><br><span style="color:${statusColor}; font-size:11px; font-weight:bold;">${h.status}</span></div>
+            </div>
+          `;
+        }).join('');
       } else {
         document.getElementById('historyList').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p>';
       }
