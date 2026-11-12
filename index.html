@@ -29,7 +29,7 @@
     .btn-withdraw { background: #16a34a; }
     .btn-primary { width: 100%; background: #2563eb; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
 
-    /* Offerwall Tabs */
+    /* Tabs */
     .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
     .tab-btn { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
     .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
@@ -54,7 +54,7 @@
   <div id="loginView" class="login-box">
     <h1>EarnRewards</h1>
     <p>Apna Nickname / Email aur Password enter karein (Naya account automatic ban jayega)</p>
-    <input type="text" id="loginInput" placeholder="Nickname ya Email (e.g. subrajit_01)">
+    <input type="text" id="loginInput" placeholder="Nickname ya Email (e.g. sksu)">
     <input type="password" id="passwordInput" placeholder="Password (min 4 characters)">
     <button class="btn-primary" onclick="loginUser()">Login / Create Account</button>
   </div>
@@ -90,10 +90,14 @@
       <iframe id="wallFrame" src="" style="width:100%; height:450px; border:none; border-radius:10px; display:none;"></iframe>
     </div>
 
-    <!-- RECENT PAYOUTS -->
+    <!-- HISTORY SECTION WITH TABS -->
     <div class="card" style="text-align:left;">
-      <h4 style="font-size:14px; color:#94a3b8; margin-bottom:6px;">Recent Payout Requests</h4>
+      <div class="tabs" style="margin-bottom:10px;">
+        <button class="tab-btn active" id="histTabPayout" onclick="switchHistory('payouts')">Payout History</button>
+        <button class="tab-btn" id="histTabEarn" onclick="switchHistory('earnings')">Earning History</button>
+      </div>
       <div id="historyList"><p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p></div>
+      <div id="earningList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p></div>
     </div>
   </div>
 </div>
@@ -163,6 +167,33 @@
     init();
   }
 
+  function renderLists(history, earnings) {
+    if (history && history.length > 0) {
+      document.getElementById('historyList').innerHTML = history.map(h => {
+        const statusColor = (h.status && h.status.toLowerCase() === 'successful') ? '#22c55e' : '#eab308';
+        return `
+          <div class="history-item">
+            <div><strong style="text-transform:uppercase; color:#38bdf8;">${h.method}</strong><br><span style="color:#94a3b8; font-size:11px;">${h.details}</span></div>
+            <div style="text-align:right;"><strong>$${Number(h.amount).toFixed(2)}</strong><br><span style="color:${statusColor}; font-size:11px; font-weight:bold;">${h.status}</span></div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      document.getElementById('historyList').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p>';
+    }
+
+    if (earnings && earnings.length > 0) {
+      document.getElementById('earningList').innerHTML = earnings.map(e => `
+        <div class="history-item">
+          <div><strong style="color:#22c55e;">Task Completed</strong><br><span style="color:#94a3b8; font-size:11px;">ID: ${e.transactionId}</span></div>
+          <div style="text-align:right;"><strong style="color:#22c55e;">+$${Number(e.amount).toFixed(2)}</strong><br><span style="color:#94a3b8; font-size:11px;">${new Date(e.createdAt).toLocaleDateString()}</span></div>
+        </div>
+      `).join('');
+    } else {
+      document.getElementById('earningList').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p>';
+    }
+  }
+
   async function loadUserData() {
     try {
       const res = await fetch('/api/user/' + encodeURIComponent(currentUser));
@@ -171,20 +202,15 @@
       if (data.user) {
         document.getElementById('balance').innerText = '$' + Number(data.user.balance).toFixed(2);
       }
-      if (data.history && data.history.length > 0) {
-        document.getElementById('historyList').innerHTML = data.history.map(h => {
-          const statusColor = (h.status && h.status.toLowerCase() === 'successful') ? '#22c55e' : '#eab308';
-          return `
-            <div class="history-item">
-              <div><strong style="text-transform:uppercase; color:#38bdf8;">${h.method}</strong><br><span style="color:#94a3b8; font-size:11px;">${h.details}</span></div>
-              <div style="text-align:right;"><strong>$${Number(h.amount).toFixed(2)}</strong><br><span style="color:${statusColor}; font-size:11px; font-weight:bold;">${h.status}</span></div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        document.getElementById('historyList').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p>';
-      }
+      renderLists(data.history, data.earnings);
     } catch (e) { console.error(e); }
+  }
+
+  function switchHistory(type) {
+    document.getElementById('histTabPayout').classList.toggle('active', type === 'payouts');
+    document.getElementById('histTabEarn').classList.toggle('active', type === 'earnings');
+    document.getElementById('historyList').classList.toggle('hidden', type !== 'payouts');
+    document.getElementById('earningList').classList.toggle('hidden', type !== 'earnings');
   }
 
   function switchWall(net) {
