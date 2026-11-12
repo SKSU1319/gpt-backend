@@ -15,31 +15,47 @@
     .login-box p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
     input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 12px; }
     
-    /* Wallet Card */
+    /* Cards */
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: #94a3b8; }
     .logout-btn { background: #334155; color: #f8fafc; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
     .balance-title { font-size: 12px; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
-    .balance-amount { font-size: 40px; font-weight: 800; color: #22c55e; margin: 6px 0 18px; }
+    .balance-amount { font-size: 40px; font-weight: 800; color: #22c55e; margin: 6px 0 14px; }
     
     /* Action Buttons */
-    .btn-row { display: flex; gap: 12px; }
-    .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; }
+    .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; }
     .btn-redeem { background: #0284c7; }
     .btn-withdraw { background: #16a34a; }
+    .btn-daily { width: 100%; background: linear-gradient(90deg, #d97706, #ea580c); padding: 10px; border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
     .btn-primary { width: 100%; background: #2563eb; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
 
+    /* Refer Box */
+    .ref-row { display: flex; gap: 8px; margin-top: 10px; }
+    .ref-input { margin-bottom: 0; font-size: 12px; color: #38bdf8; background: #0f172a; padding: 10px; }
+    .btn-copy { background: #0284c7; color: #fff; border: none; border-radius: 10px; padding: 0 14px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+
     /* Tabs */
-    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-    .tab-btn { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab-btn { flex: 1; padding: 10px 6px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
     .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
     
-    .wall-box { min-height: 260px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px dashed #334155; }
+    .wall-box { min-height: 240px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px dashed #334155; }
     .badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; border: 1px solid rgba(56, 189, 248, 0.3); }
     
-    /* History */
-    .history-item { display: flex; justify-content: space-between; padding: 10px; background: #0f172a; border-radius: 8px; margin-top: 8px; font-size: 13px; text-align: left; }
+    /* History & Leaderboard */
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 8px; margin-top: 8px; font-size: 13px; text-align: left; }
+    .lb-scroll { max-height: 320px; overflow-y: auto; padding-right: 4px; }
+    .rank-badge { display: inline-block; min-width: 28px; text-align: center; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-right: 8px; background: #1e293b; color: #94a3b8; }
+    .rank-1 { background: #eab308; color: #000; }
+    .rank-2 { background: #cbd5e1; color: #000; }
+    .rank-3 { background: #d97706; color: #fff; }
     
+    /* Footer Rules */
+    .footer-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 16px; margin-bottom: 20px; font-size: 12px; color: #94a3b8; text-align: left; }
+    .footer-card ul { padding-left: 18px; margin: 8px 0 14px; line-height: 1.6; }
+    .tg-btn { display: block; text-align: center; background: #0088cc; color: #fff; text-decoration: none; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 13px; }
+
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; padding: 16px; z-index: 100; }
     .modal-content { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; }
@@ -54,6 +70,7 @@
   <div id="loginView" class="login-box">
     <h1>EarnRewards</h1>
     <p>Apna Nickname / Email aur Password enter karein (Naya account automatic ban jayega)</p>
+    <div id="refNotice" style="display:none; background:rgba(34,197,94,0.15); color:#22c55e; font-size:12px; padding:6px; border-radius:8px; margin-bottom:12px;"></div>
     <input type="text" id="loginInput" placeholder="Nickname ya Email (e.g. sksu)">
     <input type="password" id="passwordInput" placeholder="Password (min 4 characters)">
     <button class="btn-primary" onclick="loginUser()">Login / Create Account</button>
@@ -72,6 +89,7 @@
         <button class="btn btn-redeem" onclick="openModal('redeem')">Redeem</button>
         <button class="btn btn-withdraw" onclick="openModal('withdraw')">Withdraw</button>
       </div>
+      <button class="btn-daily" onclick="claimDaily()">Claim Daily Check-in Bonus (+$0.02)</button>
     </div>
 
     <!-- MULTI-OFFERWALL CARD -->
@@ -90,14 +108,40 @@
       <iframe id="wallFrame" src="" style="width:100%; height:450px; border:none; border-radius:10px; display:none;"></iframe>
     </div>
 
-    <!-- HISTORY SECTION WITH TABS -->
+    <!-- REFER & EARN CARD -->
+    <div class="card" style="text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="font-size:14px; color:#f8fafc;">Refer & Earn (10% Lifetime)</h4>
+        <span style="font-size:12px; color:#22c55e; font-weight:bold;">Invited: <span id="refCount">0</span></span>
+      </div>
+      <p style="font-size:12px; color:#94a3b8; margin-top:4px;">Apne doston ko link share karein. Jab bhi wo koi task complete karenge, aapko 10% bonus milega!</p>
+      <div class="ref-row">
+        <input type="text" id="refLinkInput" class="ref-input" readonly>
+        <button class="btn-copy" onclick="copyRefLink()">Copy</button>
+      </div>
+    </div>
+
+    <!-- HISTORY & TOP 200 LEADERBOARD TABS -->
     <div class="card" style="text-align:left;">
       <div class="tabs" style="margin-bottom:10px;">
-        <button class="tab-btn active" id="histTabPayout" onclick="switchHistory('payouts')">Payout History</button>
-        <button class="tab-btn" id="histTabEarn" onclick="switchHistory('earnings')">Earning History</button>
+        <button class="tab-btn active" id="histTabTop" onclick="switchHistory('top200')">Top 200 Earners</button>
+        <button class="tab-btn" id="histTabPayout" onclick="switchHistory('payouts')">Payouts</button>
+        <button class="tab-btn" id="histTabEarn" onclick="switchHistory('earnings')">Earnings</button>
       </div>
-      <div id="historyList"><p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p></div>
+      <div id="top200List" class="lb-scroll"><p style="font-size:12px; color:#64748b;">Loading Top 200...</p></div>
+      <div id="historyList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p></div>
       <div id="earningList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p></div>
+    </div>
+
+    <!-- RULES & SUPPORT FOOTER -->
+    <div class="footer-card">
+      <strong style="color:#f8fafc; font-size:13px;">Platform Rules & Support:</strong>
+      <ul>
+        <li>VPN ya Proxy ka istemal strictly mana hai (Account ban ho jayega).</li>
+        <li>Ek device par sirf ek hi account chalayein.</li>
+        <li>Sabhi UPI aur Gift Card payouts 24 ghante ke andar process kiye jate hain.</li>
+      </ul>
+      <a href="https://t.me/" target="_blank" class="tg-btn">Join Official Telegram / Support</a>
     </div>
   </div>
 </div>
@@ -118,17 +162,32 @@
   let currentUser = localStorage.getItem('gpt_user_id') || '';
   let currentType = 'withdraw';
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const refFromUrl = urlParams.get('ref');
+  if (refFromUrl) {
+    localStorage.setItem('gpt_ref_by', refFromUrl.toLowerCase().trim());
+  }
+
   const WALL_URLS = {
     cpalead: '',
     monlix: ''
   };
 
   function init() {
+    const savedRef = localStorage.getItem('gpt_ref_by');
+    if (savedRef) {
+      const notice = document.getElementById('refNotice');
+      notice.innerText = 'Invited by: ' + savedRef;
+      notice.style.display = 'block';
+    }
+
     if (currentUser) {
       document.getElementById('loginView').classList.add('hidden');
       document.getElementById('dashboardView').classList.remove('hidden');
       document.getElementById('displayUser').innerText = currentUser;
+      document.getElementById('refLinkInput').value = window.location.origin + '/?ref=' + encodeURIComponent(currentUser);
       loadUserData();
+      loadLeaderboard();
     } else {
       document.getElementById('loginView').classList.remove('hidden');
       document.getElementById('dashboardView').classList.add('hidden');
@@ -138,6 +197,7 @@
   async function loginUser() {
     const userId = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('passwordInput').value;
+    const ref = localStorage.getItem('gpt_ref_by') || '';
 
     if (!userId || userId.length < 3) return alert('Kam se kam 3 letters ka nickname/email dalein');
     if (!password || password.length < 4) return alert('Kam se kam 4 characters ka password dalein');
@@ -146,7 +206,7 @@
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, password })
+        body: JSON.stringify({ userId, password, ref })
       });
       const data = await res.json();
       if (data.success) {
@@ -167,6 +227,61 @@
     init();
   }
 
+  function copyRefLink() {
+    const copyText = document.getElementById('refLinkInput');
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    alert('Referral Link Copied: ' + copyText.value);
+  }
+
+  async function claimDaily() {
+    try {
+      const res = await fetch('/api/daily-bonus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Badhai ho! $0.02 Daily Bonus aapke wallet mein add ho gaya hai!');
+        loadUserData();
+        loadLeaderboard();
+      } else {
+        alert(data.message || 'Error');
+      }
+    } catch (e) {
+      alert('Network error');
+    }
+  }
+
+  async function loadLeaderboard() {
+    try {
+      const res = await fetch('/api/leaderboard');
+      const data = await res.json();
+      if (data.leaderboard && data.leaderboard.length > 0) {
+        document.getElementById('top200List').innerHTML = data.leaderboard.map((u, idx) => {
+          const rank = idx + 1;
+          let badgeClass = 'rank-badge';
+          if (rank === 1) badgeClass += ' rank-1';
+          else if (rank === 2) badgeClass += ' rank-2';
+          else if (rank === 3) badgeClass += ' rank-3';
+
+          return `
+            <div class="history-item">
+              <div><span class="${badgeClass}">#${rank}</span><strong style="color:#f8fafc;">${u.name}</strong></div>
+              <div><strong style="color:#22c55e;">$${Number(u.earned).toFixed(2)}</strong></div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        document.getElementById('top200List').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi koi data nahi hai.</p>';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   function renderLists(history, earnings) {
     if (history && history.length > 0) {
       document.getElementById('historyList').innerHTML = history.map(h => {
@@ -185,7 +300,7 @@
     if (earnings && earnings.length > 0) {
       document.getElementById('earningList').innerHTML = earnings.map(e => `
         <div class="history-item">
-          <div><strong style="color:#22c55e;">Task Completed</strong><br><span style="color:#94a3b8; font-size:11px;">ID: ${e.transactionId}</span></div>
+          <div><strong style="color:#22c55e;">${e.note || 'Task Completed'}</strong><br><span style="color:#94a3b8; font-size:11px;">ID: ${e.transactionId}</span></div>
           <div style="text-align:right;"><strong style="color:#22c55e;">+$${Number(e.amount).toFixed(2)}</strong><br><span style="color:#94a3b8; font-size:11px;">${new Date(e.createdAt).toLocaleDateString()}</span></div>
         </div>
       `).join('');
@@ -201,14 +316,18 @@
       const data = await res.json();
       if (data.user) {
         document.getElementById('balance').innerText = '$' + Number(data.user.balance).toFixed(2);
+        document.getElementById('refCount').innerText = data.user.referralCount || 0;
       }
       renderLists(data.history, data.earnings);
     } catch (e) { console.error(e); }
   }
 
   function switchHistory(type) {
+    document.getElementById('histTabTop').classList.toggle('active', type === 'top200');
     document.getElementById('histTabPayout').classList.toggle('active', type === 'payouts');
     document.getElementById('histTabEarn').classList.toggle('active', type === 'earnings');
+    
+    document.getElementById('top200List').classList.toggle('hidden', type !== 'top200');
     document.getElementById('historyList').classList.toggle('hidden', type !== 'payouts');
     document.getElementById('earningList').classList.toggle('hidden', type !== 'earnings');
   }
