@@ -6,8 +6,8 @@
   <title>EarnRewards - Task & Cash Portal</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #0b1120; color: #f8fafc; padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .container { width: 100%; max-width: 480px; }
+    body { background: #0b1120; color: #f8fafc; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 80px; }
+    .container { width: 100%; max-width: 480px; padding: 14px; }
     
     /* Login Screen */
     .login-box { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 28px 20px; margin-top: 40px; text-align: center; }
@@ -15,46 +15,55 @@
     .login-box p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
     input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 12px; }
     
+    /* Top App Bar */
+    .app-header { width: 100%; max-width: 480px; background: #1e293b; border-bottom: 1px solid #334155; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .brand { font-weight: 800; font-size: 17px; color: #38bdf8; }
+    .header-bal { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
+
     /* Cards */
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: #94a3b8; }
-    .logout-btn { background: #334155; color: #f8fafc; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-    .balance-title { font-size: 12px; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
-    .balance-amount { font-size: 40px; font-weight: 800; color: #22c55e; margin: 6px 0 14px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; margin-bottom: 14px; text-align: center; }
+    .page-title { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .balance-big { font-size: 38px; font-weight: 800; color: #22c55e; margin: 8px 0 16px; }
     
-    /* Action Buttons */
-    .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; }
     .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; }
     .btn-redeem { background: #0284c7; }
     .btn-withdraw { background: #16a34a; }
-    .btn-daily { width: 100%; background: linear-gradient(90deg, #d97706, #ea580c); padding: 10px; border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn-daily { width: 100%; background: linear-gradient(90deg, #d97706, #ea580c); padding: 14px; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 10px; }
     .btn-primary { width: 100%; background: #2563eb; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
+    .logout-btn { width: 100%; background: #dc2626; color: #fff; border: none; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 12px; }
 
-    /* Refer Box */
-    .ref-row { display: flex; gap: 8px; margin-top: 10px; }
-    .ref-input { margin-bottom: 0; font-size: 12px; color: #38bdf8; background: #0f172a; padding: 10px; }
-    .btn-copy { background: #0284c7; color: #fff; border: none; border-radius: 10px; padding: 0 14px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
-
-    /* Tabs */
-    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-    .tab-btn { flex: 1; padding: 10px 6px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
+    /* Sub Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab-btn { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
     .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
     
-    .wall-box { min-height: 240px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px dashed #334155; }
+    .wall-box { min-height: 280px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px dashed #334155; }
     .badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; border: 1px solid rgba(56, 189, 248, 0.3); }
     
-    /* History & Leaderboard */
+    /* Refer Box */
+    .ref-row { display: flex; gap: 8px; margin-top: 12px; }
+    .ref-input { margin-bottom: 0; font-size: 12px; color: #38bdf8; background: #0f172a; padding: 10px; }
+    .btn-copy { background: #0284c7; color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+    /* Lists & Leaderboard */
     .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 8px; margin-top: 8px; font-size: 13px; text-align: left; }
-    .lb-scroll { max-height: 320px; overflow-y: auto; padding-right: 4px; }
+    .lb-scroll { max-height: 360px; overflow-y: auto; }
     .rank-badge { display: inline-block; min-width: 28px; text-align: center; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-right: 8px; background: #1e293b; color: #94a3b8; }
     .rank-1 { background: #eab308; color: #000; }
     .rank-2 { background: #cbd5e1; color: #000; }
     .rank-3 { background: #d97706; color: #fff; }
     
-    /* Footer Rules */
-    .footer-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 16px; margin-bottom: 20px; font-size: 12px; color: #94a3b8; text-align: left; }
-    .footer-card ul { padding-left: 18px; margin: 8px 0 14px; line-height: 1.6; }
-    .tg-btn { display: block; text-align: center; background: #0088cc; color: #fff; text-decoration: none; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 13px; }
+    /* Rules & Support */
+    .rules-list { padding-left: 18px; margin: 8px 0 14px; line-height: 1.6; font-size: 12px; color: #94a3b8; text-align: left; }
+    .tg-btn { display: block; text-align: center; background: #0088cc; color: #fff; text-decoration: none; padding: 11px; border-radius: 10px; font-weight: 600; font-size: 13px; }
+
+    /* Bottom Navigation Bar (5 Pages) */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 8px 4px; z-index: 90; max-width: 480px; margin: 0 auto; }
+    .nav-item { flex: 1; background: none; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 0; }
+    .nav-item span.icon { font-size: 18px; }
+    .nav-item.active { color: #38bdf8; }
 
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; padding: 16px; z-index: 100; }
@@ -64,6 +73,12 @@
   </style>
 </head>
 <body>
+
+<!-- TOP APP HEADER (Visible after Login) -->
+<div id="appHeader" class="app-header hidden">
+  <div class="brand">EarnRewards <span style="font-size:11px; color:#94a3b8; font-weight:normal;">(@<span id="headerUser"></span>)</span></div>
+  <div class="header-bal" id="headerBalance">$0.00</div>
+</div>
 
 <div class="container">
   <!-- SECURE LOGIN / REGISTER VIEW -->
@@ -76,74 +91,119 @@
     <button class="btn-primary" onclick="loginUser()">Login / Create Account</button>
   </div>
 
-  <!-- DASHBOARD VIEW -->
+  <!-- MAIN APP PAGES -->
   <div id="dashboardView" class="hidden">
-    <div class="card">
-      <div class="top-bar">
-        <span>User: <strong id="displayUser" style="color:#38bdf8;"></strong></span>
-        <button class="logout-btn" onclick="logoutUser()">Logout</button>
-      </div>
-      <div class="balance-title">Current Balance</div>
-      <div class="balance-amount" id="balance">$0.00</div>
-      <div class="btn-row">
-        <button class="btn btn-redeem" onclick="openModal('redeem')">Redeem</button>
-        <button class="btn btn-withdraw" onclick="openModal('withdraw')">Withdraw</button>
-      </div>
-      <button class="btn-daily" onclick="claimDaily()">Claim Daily Check-in Bonus (+$0.02)</button>
-    </div>
 
-    <!-- MULTI-OFFERWALL CARD -->
-    <div class="card">
-      <div class="tabs">
-        <button class="tab-btn active" id="tab1" onclick="switchWall('cpalead')">Server 1 (CPALead)</button>
-        <button class="tab-btn" id="tab2" onclick="switchWall('monlix')">Server 2 (Monlix)</button>
-      </div>
-      
-      <div id="wallPlaceholder" class="wall-box">
-        <span class="badge" id="statusBadge">CPALead Review Pending</span>
-        <h3 style="margin-bottom:6px;">Offerwall Integration</h3>
-        <p id="statusDesc" style="font-size:13px; color:#94a3b8;">Account approve hote hi CPALead ka live offers iFrame yahan load ho jayega.</p>
-      </div>
-      
-      <iframe id="wallFrame" src="" style="width:100%; height:450px; border:none; border-radius:10px; display:none;"></iframe>
-    </div>
-
-    <!-- REFER & EARN CARD -->
-    <div class="card" style="text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h4 style="font-size:14px; color:#f8fafc;">Refer & Earn (10% Lifetime)</h4>
-        <span style="font-size:12px; color:#22c55e; font-weight:bold;">Invited: <span id="refCount">0</span></span>
-      </div>
-      <p style="font-size:12px; color:#94a3b8; margin-top:4px;">Apne doston ko link share karein. Jab bhi wo koi task complete karenge, aapko 10% bonus milega!</p>
-      <div class="ref-row">
-        <input type="text" id="refLinkInput" class="ref-input" readonly>
-        <button class="btn-copy" onclick="copyRefLink()">Copy</button>
+    <!-- PAGE 1: EARN (OFFERWALLS) -->
+    <div id="page-earn" class="app-page">
+      <div class="page-title"><span>Complete Tasks & Earn</span><span style="font-size:11px; color:#22c55e;">Instant Credit</span></div>
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" id="tab1" onclick="switchWall('cpalead')">Server 1 (CPALead)</button>
+          <button class="tab-btn" id="tab2" onclick="switchWall('monlix')">Server 2 (Monlix)</button>
+        </div>
+        
+        <div id="wallPlaceholder" class="wall-box">
+          <span class="badge" id="statusBadge">CPALead Review Pending</span>
+          <h3 style="margin-bottom:6px;">Offerwall Integration</h3>
+          <p id="statusDesc" style="font-size:13px; color:#94a3b8;">Account approve hote hi CPALead ka live offers iFrame yahan load ho jayega.</p>
+        </div>
+        
+        <iframe id="wallFrame" src="" style="width:100%; height:460px; border:none; border-radius:10px; display:none;"></iframe>
       </div>
     </div>
 
-    <!-- HISTORY & TOP 200 LEADERBOARD TABS -->
-    <div class="card" style="text-align:left;">
-      <div class="tabs" style="margin-bottom:10px;">
-        <button class="tab-btn active" id="histTabTop" onclick="switchHistory('top200')">Top 200 Earners</button>
-        <button class="tab-btn" id="histTabPayout" onclick="switchHistory('payouts')">Payouts</button>
-        <button class="tab-btn" id="histTabEarn" onclick="switchHistory('earnings')">Earnings</button>
+    <!-- PAGE 2: BONUS (DAILY CHECK-IN) -->
+    <div id="page-bonus" class="app-page hidden">
+      <div class="page-title"><span>Daily Rewards & Bonus</span></div>
+      <div class="card">
+        <div style="font-size:42px; margin-bottom:8px;">🎁</div>
+        <h3 style="margin-bottom:6px;">Daily Check-in Reward</h3>
+        <p style="font-size:13px; color:#94a3b8; margin-bottom:14px;">Har 24 ghante mein ek baar apna free $0.02 daily bonus claim karein aur apna balance badhayein!</p>
+        <button class="btn-daily" onclick="claimDaily()">Claim Daily Bonus (+$0.02)</button>
       </div>
-      <div id="top200List" class="lb-scroll"><p style="font-size:12px; color:#64748b;">Loading Top 200...</p></div>
-      <div id="historyList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p></div>
-      <div id="earningList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p></div>
+      <div class="card" style="text-align:left;">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:6px;">Extra Earning Tips:</h4>
+        <p style="font-size:12px; color:#94a3b8; line-height:1.5;">Rozana login karke Daily Bonus claim karein aur "Friends" tab se apne doston ko invite karke unki kamai ka 10% lifetime bonus payein.</p>
+      </div>
     </div>
 
-    <!-- RULES & SUPPORT FOOTER -->
-    <div class="footer-card">
-      <strong style="color:#f8fafc; font-size:13px;">Platform Rules & Support:</strong>
-      <ul>
-        <li>VPN ya Proxy ka istemal strictly mana hai (Account ban ho jayega).</li>
-        <li>Ek device par sirf ek hi account chalayein.</li>
-        <li>Sabhi UPI aur Gift Card payouts 24 ghante ke andar process kiye jate hain.</li>
-      </ul>
-      <a href="https://t.me/" target="_blank" class="tg-btn">Join Official Telegram / Support</a>
+    <!-- PAGE 3: ANALYSIS (TOP 200 LEADERBOARD & EARNINGS) -->
+    <div id="page-analysis" class="app-page hidden">
+      <div class="page-title"><span>Analysis & Leaderboard</span><span style="font-size:11px; color:#eab308;">Top 200</span></div>
+      <div class="card" style="text-align:left;">
+        <div class="tabs">
+          <button class="tab-btn active" id="subTabTop" onclick="switchAnalysis('top200')">Top 200 Earners</button>
+          <button class="tab-btn" id="subTabEarn" onclick="switchAnalysis('earnings')">My Earnings</button>
+        </div>
+        <div id="top200List" class="lb-scroll"><p style="font-size:12px; color:#64748b;">Loading Top 200...</p></div>
+        <div id="earningList" class="hidden"><p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p></div>
+      </div>
     </div>
+
+    <!-- PAGE 4: FRIENDS (REFER & EARN) -->
+    <div id="page-friends" class="app-page hidden">
+      <div class="page-title"><span>Invite & Earn 10%</span><span style="font-size:12px; color:#22c55e;">Invited: <strong id="refCount">0</strong></span></div>
+      <div class="card">
+        <div style="font-size:40px; margin-bottom:8px;">🤝</div>
+        <h3 style="margin-bottom:6px;">10% Lifetime Commission</h3>
+        <p style="font-size:13px; color:#94a3b8;">Apna referral link WhatsApp ya Telegram par doston ko bhejein. Jab bhi aapka dost koi task complete karega, aapko 10% extra bonus milega!</p>
+        <div class="ref-row">
+          <input type="text" id="refLinkInput" class="ref-input" readonly>
+          <button class="btn-copy" onclick="copyRefLink()">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: WALLET & PROFILE -->
+    <div id="page-wallet" class="app-page hidden">
+      <div class="page-title"><span>My Wallet & Payouts</span></div>
+      <div class="card">
+        <div style="font-size:12px; color:#94a3b8; text-transform:uppercase;">Available Balance</div>
+        <div class="balance-big" id="walletBalance">$0.00</div>
+        <div class="btn-row">
+          <button class="btn btn-redeem" onclick="openModal('redeem')">Redeem</button>
+          <button class="btn btn-withdraw" onclick="openModal('withdraw')">Withdraw</button>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:left;">
+        <h4 style="font-size:14px; color:#f8fafc; margin-bottom:6px;">Payout History</h4>
+        <div id="historyList"><p style="font-size:12px; color:#64748b;">Abhi tak koi payout request nahi hai.</p></div>
+      </div>
+
+      <div class="card" style="text-align:left;">
+        <strong style="color:#f8fafc; font-size:13px;">Platform Rules & Support:</strong>
+        <ul class="rules-list">
+          <li>VPN ya Proxy ka istemal strictly mana hai (Account ban ho jayega).</li>
+          <li>Ek device par sirf ek hi account chalayein.</li>
+          <li>Sabhi UPI aur Gift Card payouts 24 ghante ke andar process kiye jate hain.</li>
+        </ul>
+        <a href="https://t.me/" target="_blank" class="tg-btn">Join Official Telegram / Support</a>
+        <button class="logout-btn" onclick="logoutUser()">Logout Account</button>
+      </div>
+    </div>
+
   </div>
+</div>
+
+<!-- BOTTOM 5-TAB NAVIGATION BAR -->
+<div id="bottomNav" class="bottom-nav hidden">
+  <button class="nav-item active" id="nav-earn" onclick="switchPage('earn')">
+    <span class="icon">💼</span><span>Earn</span>
+  </button>
+  <button class="nav-item" id="nav-bonus" onclick="switchPage('bonus')">
+    <span class="icon">🎁</span><span>Bonus</span>
+  </button>
+  <button class="nav-item" id="nav-analysis" onclick="switchPage('analysis')">
+    <span class="icon">🏆</span><span>Analysis</span>
+  </button>
+  <button class="nav-item" id="nav-friends" onclick="switchPage('friends')">
+    <span class="icon">👥</span><span>Friends</span>
+  </button>
+  <button class="nav-item" id="nav-wallet" onclick="switchPage('wallet')">
+    <span class="icon">💳</span><span>Wallet</span>
+  </button>
 </div>
 
 <!-- PAYOUT MODAL -->
@@ -183,15 +243,29 @@
 
     if (currentUser) {
       document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('appHeader').classList.remove('hidden');
       document.getElementById('dashboardView').classList.remove('hidden');
-      document.getElementById('displayUser').innerText = currentUser;
+      document.getElementById('bottomNav').classList.remove('hidden');
+      document.getElementById('headerUser').innerText = currentUser;
       document.getElementById('refLinkInput').value = window.location.origin + '/?ref=' + encodeURIComponent(currentUser);
       loadUserData();
       loadLeaderboard();
     } else {
       document.getElementById('loginView').classList.remove('hidden');
+      document.getElementById('appHeader').classList.add('hidden');
       document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('bottomNav').classList.add('hidden');
     }
+  }
+
+  function switchPage(pageName) {
+    const pages = ['earn', 'bonus', 'analysis', 'friends', 'wallet'];
+    pages.forEach(p => {
+      document.getElementById('page-' + p).classList.toggle('hidden', p !== pageName);
+      document.getElementById('nav-' + p).classList.toggle('active', p === pageName);
+    });
+    if (pageName === 'analysis') loadLeaderboard();
+    window.scrollTo(0, 0);
   }
 
   async function loginUser() {
@@ -277,9 +351,7 @@
       } else {
         document.getElementById('top200List').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi koi data nahi hai.</p>';
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   }
 
   function renderLists(history, earnings) {
@@ -315,20 +387,19 @@
       if (!res.ok) return logoutUser();
       const data = await res.json();
       if (data.user) {
-        document.getElementById('balance').innerText = '$' + Number(data.user.balance).toFixed(2);
+        const formatted = '$' + Number(data.user.balance).toFixed(2);
+        document.getElementById('headerBalance').innerText = formatted;
+        document.getElementById('walletBalance').innerText = formatted;
         document.getElementById('refCount').innerText = data.user.referralCount || 0;
       }
       renderLists(data.history, data.earnings);
     } catch (e) { console.error(e); }
   }
 
-  function switchHistory(type) {
-    document.getElementById('histTabTop').classList.toggle('active', type === 'top200');
-    document.getElementById('histTabPayout').classList.toggle('active', type === 'payouts');
-    document.getElementById('histTabEarn').classList.toggle('active', type === 'earnings');
-    
+  function switchAnalysis(type) {
+    document.getElementById('subTabTop').classList.toggle('active', type === 'top200');
+    document.getElementById('subTabEarn').classList.toggle('active', type === 'earnings');
     document.getElementById('top200List').classList.toggle('hidden', type !== 'top200');
-    document.getElementById('historyList').classList.toggle('hidden', type !== 'payouts');
     document.getElementById('earningList').classList.toggle('hidden', type !== 'earnings');
   }
 
