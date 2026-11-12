@@ -35,7 +35,7 @@ const payoutSchema = new mongoose.Schema({
   method: String,
   details: String,
   amount: Number,
-  status: { type: String, default: 'pending' },
+  status: { type: String, default: 'Pending' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -54,7 +54,6 @@ app.get('/api/user/:userId', async (req, res) => {
     const cleanId = req.params.userId.toLowerCase().trim();
     let user = await User.findOne({ userId: cleanId });
     if (!user) {
-      // Naye user ka account 0 balance ke sath create hoga
       user = await User.create({ userId: cleanId, balance: 0 });
     }
     const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
@@ -84,7 +83,8 @@ app.post('/api/payout', async (req, res) => {
       type,
       method,
       details,
-      amount: numAmount
+      amount: numAmount,
+      status: 'Pending'
     });
 
     res.json({ success: true, newBalance: user.balance, payoutId: newPayout._id });
@@ -93,7 +93,20 @@ app.post('/api/payout', async (req, res) => {
   }
 });
 
-// Universal Postback API (CPALead, Monlix, etc.)
+// Admin Action: Mark Payment Successful
+app.get('/admin/mark-paid/:id', async (req, res) => {
+  if (req.query.pass !== 'admin789') {
+    return res.status(401).send('Unauthorized');
+  }
+  try {
+    await Payout.findByIdAndUpdate(req.params.id, { status: 'Successful' });
+    res.redirect('/admin/payouts?pass=admin789');
+  } catch (err) {
+    res.status(500).send('Update error');
+  }
+});
+
+// Universal Postback API
 app.get('/api/postback', async (req, res) => {
   const { user_id, amount, transaction_id, secret } = req.query;
 
@@ -128,24 +141,32 @@ app.get('/api/postback', async (req, res) => {
   }
 });
 
-// Password-Protected Admin Panel
+// Password-Protected Admin Panel with Payment Status Column
 app.get('/admin/payouts', async (req, res) => {
-  // Password check (?pass=admin789)
   if (req.query.pass !== 'admin789') {
     return res.status(401).send('<h2 style="font-family:sans-serif; color:red; text-align:center; margin-top:50px;">Access Denied: Incorrect Admin Password</h2>');
   }
 
   try {
     const payouts = await Payout.find().sort({ createdAt: -1 });
-    let rows = payouts.map(p => `
-      <tr>
-        <td style="padding:10px; border:1px solid #334155;">${p.userId}</td>
-        <td style="padding:10px; border:1px solid #334155; text-transform:uppercase; font-weight:bold; color:#38bdf8;">${p.type} (${p.method})</td>
-        <td style="padding:10px; border:1px solid #334155; color:#a3e635;">${p.details}</td>
-        <td style="padding:10px; border:1px solid #334155; font-weight:bold;">$${Number(p.amount).toFixed(2)}</td>
-        <td style="padding:10px; border:1px solid #334155;">${new Date(p.createdAt).toLocaleString()}</td>
-      </tr>
-    `).join('');
+    let rows = payouts.map(p => {
+      const isPaid = p.status && p.status.toLowerCase() === 'successful';
+      const paymentCell = isPaid
+        ? `<span style="color:#22c55e; font-weight:bold;">Successful</span>`
+        : `<span style="color:#eab308; font-weight:bold;">Pending</span>
+           <a href="/admin/mark-paid/${p._id}?pass=admin789" style="margin-left:8px; background:#16a34a; color:#fff; padding:4px 8px; border-radius:5px; text-decoration:none; font-size:12px;">Mark Paid</a>`;
+
+      return `
+        <tr>
+          <td style="padding:10px; border:1px solid #334155;">${p.userId}</td>
+          <td style="padding:10px; border:1px solid #334155; text-transform:uppercase; font-weight:bold; color:#38bdf8;">${p.type} (${p.method})</td>
+          <td style="padding:10px; border:1px solid #334155; color:#a3e635;">${p.details}</td>
+          <td style="padding:10px; border:1px solid #334155;">${paymentCell}</td>
+          <td style="padding:10px; border:1px solid #334155; font-weight:bold;">$${Number(p.amount).toFixed(2)}</td>
+          <td style="padding:10px; border:1px solid #334155;">${new Date(p.createdAt).toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
 
     res.send(`
       <!DOCTYPE html>
@@ -163,12 +184,13 @@ app.get('/admin/payouts', async (req, res) => {
                 <th style="padding:10px; border:1px solid #334155;">User</th>
                 <th style="padding:10px; border:1px solid #334155;">Method</th>
                 <th style="padding:10px; border:1px solid #334155;">Payment Address / ID</th>
+                <th style="padding:10px; border:1px solid #334155;">Payment</th>
                 <th style="padding:10px; border:1px solid #334155;">Amount</th>
                 <th style="padding:10px; border:1px solid #334155;">Date & Time</th>
               </tr>
             </thead>
             <tbody>
-              ${rows || '<tr><td colspan="5" style="padding:15px; text-align:center; color:#94a3b8;">Koi payout request nahi mili.</td></tr>'}
+              ${rows || '<tr><td colspan="6" style="padding:15px; text-align:center; color:#94a3b8;">Koi payout request nahi mili.</td></tr>'}
             </tbody>
           </table>
         </div>
