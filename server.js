@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema({
   userId: { type: String, unique: true, lowercase: true, trim: true },
   password: { type: String, default: '' },
   balance: { type: Number, default: 0 },
+  totalEarned: { type: Number, default: 0 },
+  referredBy: { type: String, default: '' },
+  lastDailyClaim: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -27,6 +30,7 @@ const transactionSchema = new mongoose.Schema({
   transactionId: { type: String, unique: true },
   userId: String,
   amount: Number,
+  note: { type: String, default: 'Task Completed' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -51,17 +55,25 @@ app.get('/', (req, res) => {
 
 // Secure Login & Register API
 app.post('/api/auth', async (req, res) => {
-  const { userId, password } = req.body;
+  const { userId, password, ref } = req.body;
   if (!userId || !password || userId.trim().length < 3 || password.length < 4) {
     return res.status(400).json({ success: false, message: 'Username (min 3 chars) aur Password (min 4 chars) dalein!' });
   }
 
   try {
     const cleanId = userId.toLowerCase().trim();
+    const cleanRef = ref ? ref.toLowerCase().trim() : '';
     let user = await User.findOne({ userId: cleanId });
 
     if (!user) {
-      user = await User.create({ userId: cleanId, password: password, balance: 0 });
+      const validRef = (cleanRef && cleanRef !== cleanId) ? cleanRef : '';
+      user = await User.create({
+        userId: cleanId,
+        password: password,
+        balance: 0,
+        totalEarned: 0,
+        referredBy: validRef
+      });
     } else if (!user.password) {
       user.password = password;
       await user.save();
@@ -71,10 +83,16 @@ app.post('/api/auth', async (req, res) => {
 
     const payouts = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
     const earnings = await Transaction.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+    const referralCount = await User.countDocuments({ referredBy: cleanId });
 
     res.json({
       success: true,
-      user: { userId: user.userId, balance: user.balance },
+      user: {
+        userId: user.userId,
+        balance: user.balance,
+        lastDailyClaim: user.lastDailyClaim,
+        referralCount
+      },
       history: payouts,
       earnings: earnings
     });
@@ -83,7 +101,7 @@ app.post('/api/auth', async (req, res) => {
   }
 });
 
-// Refresh Balance, Earning History & Payout History API
+// Refresh User Data API
 app.get('/api/user/:userId', async (req, res) => {
   try {
     const cleanId = req.params.userId.toLowerCase().trim();
@@ -92,14 +110,82 @@ app.get('/api/user/:userId', async (req, res) => {
 
     const payouts = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
     const earnings = await Transaction.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(10);
+    const referralCount = await User.countDocuments({ referredBy: cleanId });
 
     res.json({
-      user: { userId: user.userId, balance: user.balance },
+      user: {
+        userId: user.userId,
+        balance: user.balance,
+        lastDailyClaim: user.lastDailyClaim,
+        referralCount
+      },
       history: payouts,
       earnings: earnings
     });
   } catch (err) {
     res.status(500).json({ error: 'Server error!' });
+  }
+});
+
+// Top 200 Leaderboard API
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const users = await User.find().lean();
+    
+    // Lifetime earning calculate karein (totalEarned ya balance jo zyada ho)
+    const ranked = users.map(u => {
+      const lifetime = Math.max(Number(u.totalEarned || 0), Number(u.balance || 0));
+      let safeName = u.userId || 'user';
+      if (safeName.includes('@')) {
+        safeName = safeName.split('@')[0] + '***';
+      }
+      return {
+        name: safeName,
+        earned: lifetime
+      };
+    })
+    .sort((a, b) => b.earned - a.earned)
+    .slice(0, 200);
+
+    res.json({ leaderboard: ranked });
+  } catch (err) {
+    res.status(500).json({ error: 'Leaderboard error' });
+  }
+});
+
+// Daily Check-in Bonus API ($0.02 every 24 hours)
+app.post('/api/daily-bonus', async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const cleanId = userId.toLowerCase().trim();
+    const user = await User.findOne({ userId: cleanId });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const now = new Date();
+    if (user.lastDailyClaim) {
+      const hoursPassed = (now - new Date(user.lastDailyClaim)) / (1000 * 60 * 60);
+      if (hoursPassed < 24) {
+        const hoursLeft = Math.ceil(24 - hoursPassed);
+        return res.status(400).json({ success: false, message: `Aaj ka bonus claim ho chuka hai! ${hoursLeft} ghante baad dobara aayein.` });
+      }
+    }
+
+    const bonusAmount = 0.02;
+    user.balance += bonusAmount;
+    user.totalEarned = (user.totalEarned || 0) + bonusAmount;
+    user.lastDailyClaim = now;
+    await user.save();
+
+    await Transaction.create({
+      transactionId: 'DAILY_' + cleanId + '_' + Date.now(),
+      userId: cleanId,
+      amount: bonusAmount,
+      note: 'Daily Check-in Bonus'
+    });
+
+    res.json({ success: true, newBalance: user.balance });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Bonus claim error' });
   }
 });
 
@@ -113,6 +199,11 @@ app.post('/api/payout', async (req, res) => {
     const user = await User.findOne({ userId: cleanId });
     if (!user || user.balance < numAmount || numAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Insufficient balance!' });
+    }
+
+    // Purane users ke liye totalEarned sync rakhein
+    if (!user.totalEarned || user.totalEarned < user.balance) {
+      user.totalEarned = user.balance;
     }
 
     user.balance -= numAmount;
@@ -166,14 +257,31 @@ app.get('/api/postback', async (req, res) => {
     await Transaction.create({
       transactionId: transaction_id,
       userId: cleanId,
-      amount: netAmount
+      amount: netAmount,
+      note: 'Offerwall Task Completed'
     });
 
-    await User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { userId: cleanId },
-      { $inc: { balance: netAmount } },
+      { $inc: { balance: netAmount, totalEarned: netAmount } },
       { upsert: true, new: true }
     );
+
+    if (user && user.referredBy) {
+      const refBonus = netAmount * 0.10;
+      if (refBonus > 0) {
+        await User.findOneAndUpdate(
+          { userId: user.referredBy },
+          { $inc: { balance: refBonus, totalEarned: refBonus } }
+        );
+        await Transaction.create({
+          transactionId: 'REF_' + transaction_id,
+          userId: user.referredBy,
+          amount: refBonus,
+          note: `Referral Bonus (${cleanId})`
+        });
+      }
+    }
 
     res.status(200).send('OK');
   } catch (err) {
