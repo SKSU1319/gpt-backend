@@ -18,6 +18,7 @@ mongoose.connect(MONGO_URI)
 // Schemas
 const userSchema = new mongoose.Schema({
   userId: { type: String, unique: true, lowercase: true, trim: true },
+  password: { type: String, default: '' },
   balance: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
@@ -48,16 +49,43 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// User Login / Auto-Register & Balance API
+// Secure Login & Register API
+app.post('/api/auth', async (req, res) => {
+  const { userId, password } = req.body;
+  if (!userId || !password || userId.trim().length < 3 || password.length < 4) {
+    return res.status(400).json({ success: false, message: 'Username (min 3 chars) aur Password (min 4 chars) dalein!' });
+  }
+
+  try {
+    const cleanId = userId.toLowerCase().trim();
+    let user = await User.findOne({ userId: cleanId });
+
+    if (!user) {
+      // Naya user account password ke sath banega
+      user = await User.create({ userId: cleanId, password: password, balance: 0 });
+    } else if (!user.password) {
+      // Purane bina password wale account (jaise user_101) par pehla password set ho jayega
+      user.password = password;
+      await user.save();
+    } else if (user.password !== password) {
+      return res.status(401).json({ success: false, message: 'Galat Password! Sahi password dalein ya naya username chunein.' });
+    }
+
+    const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
+    res.json({ success: true, user: { userId: user.userId, balance: user.balance }, history });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error!' });
+  }
+});
+
+// Refresh Balance & History API
 app.get('/api/user/:userId', async (req, res) => {
   try {
     const cleanId = req.params.userId.toLowerCase().trim();
-    let user = await User.findOne({ userId: cleanId });
-    if (!user) {
-      user = await User.create({ userId: cleanId, balance: 0 });
-    }
+    const user = await User.findOne({ userId: cleanId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
     const history = await Payout.find({ userId: cleanId }).sort({ createdAt: -1 }).limit(5);
-    res.json({ user, history });
+    res.json({ user: { userId: user.userId, balance: user.balance }, history });
   } catch (err) {
     res.status(500).json({ error: 'Server error!' });
   }
@@ -141,7 +169,7 @@ app.get('/api/postback', async (req, res) => {
   }
 });
 
-// Password-Protected Admin Panel with Payment Status Column
+// Password-Protected Admin Panel
 app.get('/admin/payouts', async (req, res) => {
   if (req.query.pass !== 'admin789') {
     return res.status(401).send('<h2 style="font-family:sans-serif; color:red; text-align:center; margin-top:50px;">Access Denied: Incorrect Admin Password</h2>');
