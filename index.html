@@ -103,13 +103,14 @@
           <button class="tab-btn" id="tab2" onclick="switchWall('monlix')">Server 2 (Monlix)</button>
         </div>
         
-        <div id="wallPlaceholder" class="wall-box">
-          <span class="badge" id="statusBadge">CPALead Review Pending</span>
+        <div id="wallPlaceholder" class="wall-box" style="display:none;">
+          <span class="badge" id="statusBadge">Monlix Review Pending</span>
           <h3 style="margin-bottom:6px;">Offerwall Integration</h3>
-          <p id="statusDesc" style="font-size:13px; color:#94a3b8;">Account approve hote hi CPALead ka live offers iFrame yahan load ho jayega.</p>
+          <p id="statusDesc" style="font-size:13px; color:#94a3b8;">Account approve hote hi Monlix ka live offers iFrame yahan load ho jayega.</p>
         </div>
         
-        <iframe id="wallFrame" src="" style="width:100%; height:460px; border:none; border-radius:10px; display:none;"></iframe>
+        <iframe id="wallFrame" src="" style="width:100%; height:480px; border:none; border-radius:10px; display:none;"></iframe>
+        <a id="openDirectBtn" href="#" target="_blank" style="display:inline-block; margin-top:10px; font-size:12px; color:#38bdf8; text-decoration:none;">Offerwall load nahi ho raha? Full Screen mein kholein &nearr;</a>
       </div>
     </div>
 
@@ -229,7 +230,7 @@
   }
 
   const WALL_URLS = {
-    cpalead: '',
+    cpalead: 'https://www.akamaicdn.org/wall/jpaBunt?subid={USER_ID}',
     monlix: ''
   };
 
@@ -248,6 +249,7 @@
       document.getElementById('bottomNav').classList.remove('hidden');
       document.getElementById('headerUser').innerText = currentUser;
       document.getElementById('refLinkInput').value = window.location.origin + '/?ref=' + encodeURIComponent(currentUser);
+      switchWall('cpalead');
       loadUserData();
       loadLeaderboard();
     } else {
@@ -265,6 +267,7 @@
       document.getElementById('nav-' + p).classList.toggle('active', p === pageName);
     });
     if (pageName === 'analysis') loadLeaderboard();
+    if (pageName === 'wallet' || pageName === 'earn') loadUserData();
     window.scrollTo(0, 0);
   }
 
@@ -408,13 +411,18 @@
     document.getElementById('tab2').classList.toggle('active', net === 'monlix');
 
     const rawUrl = WALL_URLS[net];
+    const directBtn = document.getElementById('openDirectBtn');
     if (rawUrl) {
+      const finalUrl = rawUrl.replace('{USER_ID}', encodeURIComponent(currentUser));
       document.getElementById('wallPlaceholder').style.display = 'none';
       const frame = document.getElementById('wallFrame');
-      frame.src = rawUrl.replace('{USER_ID}', encodeURIComponent(currentUser));
+      frame.src = finalUrl;
       frame.style.display = 'block';
+      directBtn.href = finalUrl;
+      directBtn.style.display = 'inline-block';
     } else {
       document.getElementById('wallFrame').style.display = 'none';
+      directBtn.style.display = 'none';
       document.getElementById('wallPlaceholder').style.display = 'flex';
       document.getElementById('statusBadge').innerText = net === 'cpalead' ? 'CPALead Review Pending' : 'Monlix Review Pending';
       document.getElementById('statusDesc').innerText = `Account approve hote hi ${net.toUpperCase()} ka live offers iFrame yahan load ho jayega.`;
