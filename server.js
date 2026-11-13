@@ -131,18 +131,13 @@ app.get('/api/user/:userId', async (req, res) => {
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const users = await User.find().lean();
-    
-    // Lifetime earning calculate karein (totalEarned ya balance jo zyada ho)
     const ranked = users.map(u => {
       const lifetime = Math.max(Number(u.totalEarned || 0), Number(u.balance || 0));
       let safeName = u.userId || 'user';
       if (safeName.includes('@')) {
         safeName = safeName.split('@')[0] + '***';
       }
-      return {
-        name: safeName,
-        earned: lifetime
-      };
+      return { name: safeName, earned: lifetime };
     })
     .sort((a, b) => b.earned - a.earned)
     .slice(0, 200);
@@ -201,7 +196,6 @@ app.post('/api/payout', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Insufficient balance!' });
     }
 
-    // Purane users ke liye totalEarned sync rakhein
     if (!user.totalEarned || user.totalEarned < user.balance) {
       user.totalEarned = user.balance;
     }
@@ -237,7 +231,67 @@ app.get('/admin/mark-paid/:id', async (req, res) => {
   }
 });
 
-// Universal Postback API
+// CPALead Automatic Postback API (50% User Share + 10% Referral Bonus)
+app.get('/api/postback/cpalead', async (req, res) => {
+  const { subid, lead_id, campaign_name, payout } = req.query;
+
+  if (!subid || !payout) {
+    return res.status(400).send('Missing parameters');
+  }
+
+  try {
+    const txId = 'CPA_' + (lead_id || Date.now());
+    const exists = await Transaction.findOne({ transactionId: txId });
+    if (exists) {
+      return res.status(200).send('Duplicate transaction');
+    }
+
+    const cleanId = subid.toLowerCase().trim();
+    const rawPayout = parseFloat(payout);
+    if (isNaN(rawPayout) || rawPayout <= 0) {
+      return res.status(400).send('Invalid payout');
+    }
+
+    // 50% User ko milega, 50% aapka profit
+    const netAmount = Number((rawPayout * 0.50).toFixed(4));
+
+    await Transaction.create({
+      transactionId: txId,
+      userId: cleanId,
+      amount: netAmount,
+      note: campaign_name ? `CPALead: ${campaign_name}` : 'CPALead Offer Completed'
+    });
+
+    const user = await User.findOneAndUpdate(
+      { userId: cleanId },
+      { $inc: { balance: netAmount, totalEarned: netAmount } },
+      { upsert: true, new: true }
+    );
+
+    if (user && user.referredBy) {
+      const refBonus = Number((netAmount * 0.10).toFixed(4));
+      if (refBonus > 0) {
+        await User.findOneAndUpdate(
+          { userId: user.referredBy },
+          { $inc: { balance: refBonus, totalEarned: refBonus } }
+        );
+        await Transaction.create({
+          transactionId: 'REF_' + txId,
+          userId: user.referredBy,
+          amount: refBonus,
+          note: `Referral Bonus (${cleanId})`
+        });
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (err) {
+    console.error('CPALead Postback Error:', err);
+    res.status(500).send('Database error');
+  }
+});
+
+// Universal Postback API (For Future Offerwalls like Monlix)
 app.get('/api/postback', async (req, res) => {
   const { user_id, amount, transaction_id, secret } = req.query;
 
