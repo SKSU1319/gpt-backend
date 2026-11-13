@@ -18,13 +18,17 @@
     /* Top App Bar */
     .app-header { width: 100%; max-width: 480px; background: #1e293b; border-bottom: 1px solid #334155; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
     .brand { font-weight: 800; font-size: 17px; color: #38bdf8; }
-    .header-bal { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
+    .header-bal { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 13px; }
 
     /* Cards */
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; margin-bottom: 14px; text-align: center; }
     .page-title { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-    .balance-big { font-size: 38px; font-weight: 800; color: #22c55e; margin: 8px 0 16px; }
+    .balance-big { font-size: 36px; font-weight: 800; color: #22c55e; margin: 6px 0 4px; }
+    .balance-inr { font-size: 15px; font-weight: 700; color: #eab308; margin-bottom: 16px; }
     
+    /* Rate Info Banner */
+    .rate-banner { background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.35); color: #facc15; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+
     /* Buttons */
     .btn-row { display: flex; gap: 10px; }
     .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; }
@@ -77,7 +81,7 @@
 <!-- TOP APP HEADER (Visible after Login) -->
 <div id="appHeader" class="app-header hidden">
   <div class="brand">EarnRewards <span style="font-size:11px; color:#94a3b8; font-weight:normal;">(@<span id="headerUser"></span>)</span></div>
-  <div class="header-bal" id="headerBalance">$0.00</div>
+  <div class="header-bal" id="headerBalance">$0.00 (₹0)</div>
 </div>
 
 <div class="container">
@@ -98,6 +102,7 @@
     <div id="page-earn" class="app-page">
       <div class="page-title"><span>Complete Tasks & Earn</span><span style="font-size:11px; color:#22c55e;">Instant Credit</span></div>
       <div class="card">
+        <div class="rate-banner">💰 Rate: 100 Cents = $1.00 = ₹80 (Min Withdraw: $1.00)</div>
         <div class="tabs">
           <button class="tab-btn active" id="tab1" onclick="switchWall('cpalead')">Server 1 (CPALead)</button>
           <button class="tab-btn" id="tab2" onclick="switchWall('monlix')">Server 2 (Monlix)</button>
@@ -120,8 +125,8 @@
       <div class="card">
         <div style="font-size:42px; margin-bottom:8px;">🎁</div>
         <h3 style="margin-bottom:6px;">Daily Check-in Reward</h3>
-        <p style="font-size:13px; color:#94a3b8; margin-bottom:14px;">Har 24 ghante mein ek baar apna free $0.02 daily bonus claim karein aur apna balance badhayein!</p>
-        <button class="btn-daily" onclick="claimDaily()">Claim Daily Bonus (+$0.02)</button>
+        <p style="font-size:13px; color:#94a3b8; margin-bottom:14px;">Har 24 ghante mein ek baar apna free $0.02 (₹1.60) daily bonus claim karein aur apna balance badhayein!</p>
+        <button class="btn-daily" onclick="claimDaily()">Claim Daily Bonus (+$0.02 / ₹1.60)</button>
       </div>
       <div class="card" style="text-align:left;">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:6px;">Extra Earning Tips:</h4>
@@ -162,9 +167,10 @@
       <div class="card">
         <div style="font-size:12px; color:#94a3b8; text-transform:uppercase;">Available Balance</div>
         <div class="balance-big" id="walletBalance">$0.00</div>
+        <div class="balance-inr" id="walletInr">≈ ₹0.00 ($1 = ₹80)</div>
         <div class="btn-row">
-          <button class="btn btn-redeem" onclick="openModal('redeem')">Redeem</button>
-          <button class="btn btn-withdraw" onclick="openModal('withdraw')">Withdraw</button>
+          <button class="btn btn-redeem" onclick="openModal('redeem')">Redeem (Min $1)</button>
+          <button class="btn btn-withdraw" onclick="openModal('withdraw')">Withdraw (Min $1)</button>
         </div>
       </div>
 
@@ -176,8 +182,8 @@
       <div class="card" style="text-align:left;">
         <strong style="color:#f8fafc; font-size:13px;">Platform Rules & Support:</strong>
         <ul class="rules-list">
+          <li>100 Cents = $1.00 = ₹80 (Minimum Withdrawal $1.00 / ₹80).</li>
           <li>VPN ya Proxy ka istemal strictly mana hai (Account ban ho jayega).</li>
-          <li>Ek device par sirf ek hi account chalayein.</li>
           <li>Sabhi UPI aur Gift Card payouts 24 ghante ke andar process kiye jate hain.</li>
         </ul>
         <a href="https://t.me/" target="_blank" class="tg-btn">Join Official Telegram / Support</a>
@@ -211,15 +217,17 @@
 <div id="payoutModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <h3 id="modalTitle" style="margin-bottom:14px;">Withdraw Funds</h3>
+    <h3 id="modalTitle" style="margin-bottom:6px;">Withdraw Funds</h3>
+    <p style="font-size:12px; color:#eab308; margin-bottom:12px;">Rate: $1.00 = ₹80 (Minimum $1.00)</p>
     <select id="methodSelect"></select>
     <input type="text" id="detailsInput" placeholder="Enter UPI ID / Email">
-    <input type="number" id="amountInput" step="0.10" min="0.50" placeholder="Amount in $ (Min $0.50)">
+    <input type="number" id="amountInput" step="0.10" min="1.00" placeholder="Amount in $ (Min $1.00 = ₹80)">
     <button class="btn-primary" onclick="submitPayout()">Submit Request</button>
   </div>
 </div>
 
 <script>
+  const INR_RATE = 80;
   let currentUser = localStorage.getItem('gpt_user_id') || '';
   let currentType = 'withdraw';
 
@@ -321,7 +329,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        alert('Badhai ho! $0.02 Daily Bonus aapke wallet mein add ho gaya hai!');
+        alert('Badhai ho! $0.02 (₹1.60) Daily Bonus aapke wallet mein add ho gaya hai!');
         loadUserData();
         loadLeaderboard();
       } else {
@@ -343,11 +351,13 @@
           if (rank === 1) badgeClass += ' rank-1';
           else if (rank === 2) badgeClass += ' rank-2';
           else if (rank === 3) badgeClass += ' rank-3';
+          const usd = Number(u.earned).toFixed(2);
+          const inr = Math.round(Number(u.earned) * INR_RATE);
 
           return `
             <div class="history-item">
               <div><span class="${badgeClass}">#${rank}</span><strong style="color:#f8fafc;">${u.name}</strong></div>
-              <div><strong style="color:#22c55e;">$${Number(u.earned).toFixed(2)}</strong></div>
+              <div><strong style="color:#22c55e;">$${usd} <span style="font-size:11px; color:#eab308;">(₹${inr})</span></strong></div>
             </div>
           `;
         }).join('');
@@ -361,10 +371,12 @@
     if (history && history.length > 0) {
       document.getElementById('historyList').innerHTML = history.map(h => {
         const statusColor = (h.status && h.status.toLowerCase() === 'successful') ? '#22c55e' : '#eab308';
+        const usd = Number(h.amount).toFixed(2);
+        const inr = Math.round(Number(h.amount) * INR_RATE);
         return `
           <div class="history-item">
             <div><strong style="text-transform:uppercase; color:#38bdf8;">${h.method}</strong><br><span style="color:#94a3b8; font-size:11px;">${h.details}</span></div>
-            <div style="text-align:right;"><strong>$${Number(h.amount).toFixed(2)}</strong><br><span style="color:${statusColor}; font-size:11px; font-weight:bold;">${h.status}</span></div>
+            <div style="text-align:right;"><strong>$${usd} (₹${inr})</strong><br><span style="color:${statusColor}; font-size:11px; font-weight:bold;">${h.status}</span></div>
           </div>
         `;
       }).join('');
@@ -373,12 +385,16 @@
     }
 
     if (earnings && earnings.length > 0) {
-      document.getElementById('earningList').innerHTML = earnings.map(e => `
-        <div class="history-item">
-          <div><strong style="color:#22c55e;">${e.note || 'Task Completed'}</strong><br><span style="color:#94a3b8; font-size:11px;">ID: ${e.transactionId}</span></div>
-          <div style="text-align:right;"><strong style="color:#22c55e;">+$${Number(e.amount).toFixed(2)}</strong><br><span style="color:#94a3b8; font-size:11px;">${new Date(e.createdAt).toLocaleDateString()}</span></div>
-        </div>
-      `).join('');
+      document.getElementById('earningList').innerHTML = earnings.map(e => {
+        const usd = Number(e.amount).toFixed(2);
+        const inr = (Number(e.amount) * INR_RATE).toFixed(2);
+        return `
+          <div class="history-item">
+            <div><strong style="color:#22c55e;">${e.note || 'Task Completed'}</strong><br><span style="color:#94a3b8; font-size:11px;">ID: ${e.transactionId}</span></div>
+            <div style="text-align:right;"><strong style="color:#22c55e;">+$${usd} (₹${inr})</strong><br><span style="color:#94a3b8; font-size:11px;">${new Date(e.createdAt).toLocaleDateString()}</span></div>
+          </div>
+        `;
+      }).join('');
     } else {
       document.getElementById('earningList').innerHTML = '<p style="font-size:12px; color:#64748b;">Abhi tak koi task earning nahi hui hai.</p>';
     }
@@ -390,9 +406,12 @@
       if (!res.ok) return logoutUser();
       const data = await res.json();
       if (data.user) {
-        const formatted = '$' + Number(data.user.balance).toFixed(2);
-        document.getElementById('headerBalance').innerText = formatted;
-        document.getElementById('walletBalance').innerText = formatted;
+        const balNum = Number(data.user.balance);
+        const usd = '$' + balNum.toFixed(2);
+        const inr = (balNum * INR_RATE).toFixed(2);
+        document.getElementById('headerBalance').innerText = `${usd} (₹${inr})`;
+        document.getElementById('walletBalance').innerText = usd;
+        document.getElementById('walletInr').innerText = `≈ ₹${inr} ($1 = ₹${INR_RATE})`;
         document.getElementById('refCount').innerText = data.user.referralCount || 0;
       }
       renderLists(data.history, data.earnings);
@@ -454,8 +473,8 @@
     const details = document.getElementById('detailsInput').value.trim();
     const amount = parseFloat(document.getElementById('amountInput').value);
 
-    if (!details || !amount || amount < 0.50) {
-      return alert('Details aur kam se kam $0.50 amount dalein');
+    if (!details || !amount || amount < 1.00) {
+      return alert('Details aur kam se kam $1.00 (₹80) amount dalein');
     }
 
     const res = await fetch('/api/payout', {
@@ -465,7 +484,7 @@
     });
     const data = await res.json();
     if (data.success) {
-      alert('Request submit ho gayi!');
+      alert('Request submit ho gayi! 24 ghante mein payment mil jayega.');
       closeModal();
       loadUserData();
     } else {
